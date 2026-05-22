@@ -61,11 +61,34 @@ Set these values in `.env`:
 
 ### 3. Start the app
 
+Run this from the folder that contains `Dockerfile` and `docker-compose.yml`:
+
+```bash
+cd availability
+ls Dockerfile docker-compose.yml
+docker compose build --no-cache
+docker compose up -d
+```
+
+Use `--build` if you prefer one command:
+
 ```bash
 docker compose up -d --build
 ```
 
 The app listens on port 8000.
+
+#### "image availability-web is not gettable"
+
+That means Docker tried to **download** the image from the internet instead of **building** it locally. Fix:
+
+```bash
+cd availability
+docker compose build
+docker compose up -d
+```
+
+Do not run `docker compose pull` for this project. If build fails, check you cloned the full repo and have network access for `pip install` inside the build.
 
 ### 4. Expose with Cloudflare Tunnel (free HTTPS link)
 

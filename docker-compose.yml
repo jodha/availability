@@ -1,6 +1,8 @@
 services:
   web:
     build: .
+    image: availability-web:latest
+    pull_policy: build
     ports:
       - "8000:8000"
     env_file:
