@@ -22,7 +22,24 @@
         <button type="submit">Create active poll</button>
       </form>
       <p class="muted">Invite code for signup: <strong>{{ invite_code }}</strong></p>
+      <p class="muted">Site URL: <strong>{{ base_url }}</strong></p>
     </section>
+    {% if users %}
+    <section class="card">
+      <h2>Users</h2>
+      <ul class="responses">
+        {% for user in users %}
+        <li>
+          {{ user.display_name }} ({{ user.email }})
+          <form method="post" action="/admin/users/{{ user.id }}/reset-password" class="choice-row">
+            <input type="password" name="new_password" placeholder="New password" minlength="8" required>
+            <button type="submit" class="small">Reset password</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
     {% if poll %}
     <section class="card">
       <h2>Active poll: {{ poll.title }}</h2>

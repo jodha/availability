@@ -15,8 +15,9 @@ from app.database import get_db
 from app.models import AvailabilityChoice, User
 from app.services.availability_service import choices_for_user, matrix_for_poll, save_availability
 from app.services.calendar_service import build_calendar_bytes
-from app.services.email_service import send_calendar_email
-from app.services.poll_service import authenticate_user, create_user, get_active_poll
+from app.services.email_service import send_calendar_email, send_password_reset_email
+from app.services.password_reset_service import create_reset_token, reset_user_password
+from app.services.poll_service import authenticate_user, create_user, find_user_by_email, get_active_poll
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
@@ -81,6 +82,42 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
 def logout(request: Request):
     clear_user_session(request)
     return _redirect("/")
+
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    settings = get_settings()
+    return templates.TemplateResponse(request, "forgot_password.html", {"app_name": settings.app_name})
+
+
+@router.post("/forgot-password")
+def forgot_password(request: Request, email: str = Form(...), db: Session = Depends(get_db)):
+    settings = get_settings()
+    user = find_user_by_email(db, email)
+    if user is not None:
+        token = create_reset_token(db, user.id)
+        reset_url = f"{settings.base_url.rstrip('/')}/reset-password?token={token}"
+        send_password_reset_email(settings, user.email, reset_url)
+    return _redirect("/login", "If that email exists, a reset link was sent")
+
+
+@router.get("/reset-password", response_class=HTMLResponse)
+def reset_password_page(request: Request, token: str):
+    settings = get_settings()
+    return templates.TemplateResponse(
+        request,
+        "reset_password.html",
+        {"app_name": settings.app_name, "token": token},
+    )
+
+
+@router.post("/reset-password")
+def reset_password(request: Request, token: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    try:
+        reset_user_password(db, token, password)
+    except ValueError as error:
+        return _redirect("/forgot-password", str(error))
+    return _redirect("/login", "Password updated")
 
 
 @router.get("/poll", response_class=HTMLResponse)

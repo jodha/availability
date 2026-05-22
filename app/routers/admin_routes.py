@@ -23,6 +23,7 @@ from app.database import get_db
 from app.models import AvailabilityChoice, Event, Poll, User
 from app.services.availability_service import matrix_for_poll, save_availability
 from app.services.event_limits import EventLimitError, ensure_event_count_allowed
+from app.services.password_reset_service import admin_reset_password
 from app.services.poll_service import create_poll, get_active_poll, parse_start_at
 
 router = APIRouter()
@@ -73,6 +74,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
             "users": users,
             "matrix": matrix,
             "invite_code": settings.invite_code,
+            "base_url": settings.base_url,
             "max_events": settings.max_events_per_poll,
             "timezone": settings.timezone,
         },
@@ -125,3 +127,20 @@ def admin_delete_event(event_id: int, request: Request, db: Session = Depends(ge
         db.delete(event)
         db.commit()
     return _redirect("/admin", "Event deleted")
+
+
+@router.post("/admin/users/{user_id}/reset-password")
+def admin_reset_user_password(
+    user_id: int,
+    request: Request,
+    new_password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    if not is_admin_session(request):
+        return RedirectResponse("/admin/login", status_code=303)
+    try:
+        admin_reset_password(db, user_id, new_password)
+    except ValueError as error:
+        return _redirect("/admin", str(error))
+    return _redirect("/admin", "Password reset")
+
