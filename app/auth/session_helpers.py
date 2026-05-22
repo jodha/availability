@@ -11,6 +11,18 @@ def get_user_id(request: Request) -> int | None:
     return int(value) if value is not None else None
 
 
+def get_pending_email(request: Request) -> str | None:
+    return request.session.get("pending_email")
+
+
+def set_pending_email(request: Request, email: str) -> None:
+    request.session["pending_email"] = email.lower()
+
+
+def clear_pending_email(request: Request) -> None:
+    request.session.pop("pending_email", None)
+
+
 def set_user_session(request: Request, user: User) -> None:
     request.session["user_id"] = user.id
 
@@ -29,10 +41,6 @@ def set_admin_session(request: Request) -> None:
 
 def clear_admin_session(request: Request) -> None:
     request.session.pop("admin", None)
-
-
-def invite_code_valid(code: str) -> bool:
-    return code == get_settings().invite_code
 
 
 def admin_credentials_valid(username: str, password: str) -> bool:

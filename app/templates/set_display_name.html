@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Choose your display name</h2>
+  <p class="muted">This is how others will see you on the poll.</p>
+  <form method="post" action="/set-display-name" class="stack">
+    <label>Display name<input type="text" name="display_name" required></label>
+    <button type="submit">Continue to poll</button>
+  </form>
+</section>
+{% endblock %}

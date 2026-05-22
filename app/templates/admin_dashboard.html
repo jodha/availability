@@ -16,30 +16,57 @@
   {% endif %}
   <main>
     <section class="card">
-      <h2>Create poll</h2>
-      <form method="post" action="/admin/polls" class="stack inline-form">
-        <label>Poll title<input type="text" name="title" required></label>
-        <button type="submit">Create active poll</button>
-      </form>
-      <p class="muted">Invite code for signup: <strong>{{ invite_code }}</strong></p>
+      <h2>Allowed emails</h2>
       <p class="muted">Site URL: <strong>{{ base_url }}</strong></p>
-    </section>
-    {% if users %}
-    <section class="card">
-      <h2>Users</h2>
+      <form method="post" action="/admin/allowed-emails" class="stack inline-form">
+        <label>Email<input type="email" name="email" required></label>
+        <button type="submit">Add email</button>
+      </form>
       <ul class="responses">
-        {% for user in users %}
+        {% for record in allowed_emails %}
         <li>
-          {{ user.display_name }} ({{ user.email }})
-          <form method="post" action="/admin/users/{{ user.id }}/reset-password" class="choice-row">
-            <input type="password" name="new_password" placeholder="New password" minlength="8" required>
-            <button type="submit" class="small">Reset password</button>
+          {{ record.email }}
+          <form method="post" action="/admin/allowed-emails/delete" class="choice-row">
+            <input type="hidden" name="email" value="{{ record.email }}">
+            <button type="submit" class="danger small">Remove</button>
           </form>
         </li>
         {% endfor %}
       </ul>
     </section>
-    {% endif %}
+    <section class="card">
+      <h2>Locations</h2>
+      <form method="post" action="/admin/locations" class="stack">
+        <label>Venue name<input type="text" name="venue_name" required></label>
+        <label>Address<input type="text" name="address" required></label>
+        <button type="submit">Add location</button>
+      </form>
+      {% for location in locations %}
+      <article class="event-card">
+        <form method="post" action="/admin/locations/{{ location.id }}/update" class="stack">
+          <label>Venue<input type="text" name="venue_name" value="{{ location.venue_name }}" required></label>
+          <label>Address<input type="text" name="address" value="{{ location.address }}" required></label>
+          <button type="submit">Save location</button>
+        </form>
+        <form method="post" action="/admin/locations/{{ location.id }}/delete">
+          <button type="submit" class="danger small">Delete</button>
+        </form>
+        {% if updated_location_id and updated_location_id|int == location.id and affected_events %}
+        <p class="flash">Location changed — affects {{ affected_events|length }} event(s).</p>
+        <form method="post" action="/admin/locations/{{ location.id }}/resend-calendars">
+          <button type="submit">Resend calendar invites for affected events</button>
+        </form>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    <section class="card">
+      <h2>Create poll</h2>
+      <form method="post" action="/admin/polls" class="stack inline-form">
+        <label>Poll title<input type="text" name="title" required></label>
+        <button type="submit">Create active poll</button>
+      </form>
+    </section>
     {% if poll %}
     <section class="card">
       <h2>Active poll: {{ poll.title }}</h2>
@@ -47,7 +74,17 @@
       <form method="post" action="/admin/events" class="stack">
         <label>Title<input type="text" name="title" required></label>
         <label>Start<input type="datetime-local" name="start_at" required></label>
-        <label>Location<input type="text" name="location" required></label>
+        <label>Location
+          <select name="location_id">
+            <option value="">Select existing location</option>
+            {% for location in locations %}
+            <option value="{{ location.id }}">{{ location.venue_name }} — {{ location.address }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <p class="muted">Or add a new location inline:</p>
+        <label>New venue name<input type="text" name="new_venue_name"></label>
+        <label>New address<input type="text" name="new_address"></label>
         <button type="submit">Add event</button>
       </form>
       <div class="table-wrap">
@@ -61,11 +98,12 @@
             </tr>
           </thead>
           <tbody>
-            {% for event in events|sort(attribute='start_at') %}
+            {% for event in events %}
             <tr>
               <td>
                 <strong>{{ event.title }}</strong><br>
-                <span class="muted">{{ event.start_at.strftime('%Y-%m-%d %I:%M %p') }} · {{ event.location }}</span>
+                <span class="muted">{{ event.start_at.strftime('%Y-%m-%d %I:%M %p') }}</span><br>
+                <span class="muted">{{ event.location.venue_name }}, {{ event.location.address }}</span>
                 <form method="post" action="/admin/events/{{ event.id }}/delete">
                   <button type="submit" class="danger small">Delete</button>
                 </form>

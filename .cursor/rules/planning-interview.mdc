@@ -1,0 +1,16 @@
+---
+description: Interview one question at a time and keep the plan updated during planning
+alwaysApply: true
+---
+
+# Availability Project — Planning Rules
+
+When gathering requirements or clarifying features for this project:
+
+1. **Interview one question at a time** — ask a single focused question, wait for the answer, then ask the next.
+
+2. **Keep the plan updated** — after each answer, update `.cursor/plans/Availability Status Plan.plan.md`.
+
+3. **Do not start coding** until the user explicitly says to execute (e.g. "go ahead", "execute the plan").
+
+4. **Summarize decisions** in the plan interview table as answers are collected.

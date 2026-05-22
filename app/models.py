@@ -18,6 +18,22 @@ class AvailabilityChoice(str, enum.Enum):
     maybe = "maybe"
 
 
+class AllowedEmail(Base):
+    __tablename__ = "allowed_emails"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
+
+
+class Location(Base):
+    __tablename__ = "locations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    venue_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    address: Mapped[str] = mapped_column(String(300), nullable=False)
+    events: Mapped[list["Event"]] = relationship(back_populates="location")
+
+
 class Poll(Base):
     __tablename__ = "polls"
 
@@ -32,10 +48,12 @@ class Event(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     poll_id: Mapped[int] = mapped_column(ForeignKey("polls.id"), nullable=False)
+    location_id: Mapped[int] = mapped_column(ForeignKey("locations.id"), nullable=False)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    location: Mapped[str] = mapped_column(String(300), nullable=False)
+    calendar_sequence: Mapped[int] = mapped_column(Integer, default=0)
     poll: Mapped[Poll] = relationship(back_populates="events")
+    location: Mapped[Location] = relationship(back_populates="events")
     availabilities: Mapped[list["Availability"]] = relationship(back_populates="event", cascade="all, delete-orphan")
 
 
@@ -44,20 +62,8 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     availabilities: Mapped[list["Availability"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-
-
-class PasswordResetToken(Base):
-    __tablename__ = "password_reset_tokens"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    token: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    user: Mapped[User] = relationship(back_populates="reset_tokens")
 
 
 class Availability(Base):
@@ -70,6 +76,10 @@ class Availability(Base):
     choice: Mapped[AvailabilityChoice] = mapped_column(Enum(AvailabilityChoice), nullable=False)
     user: Mapped[User] = relationship(back_populates="availabilities")
     event: Mapped[Event] = relationship(back_populates="availabilities")
+
+
+def format_location(location: Location) -> str:
+    return f"{location.venue_name}, {location.address}"
 
 
 def build_engine(database_url: str):

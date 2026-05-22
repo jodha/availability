@@ -10,7 +10,8 @@
   {% for event in events|sort(attribute='start_at') %}
   <article class="event-card">
     <h3>{{ event.title }}</h3>
-    <p>{{ event.start_at.strftime('%Y-%m-%d %I:%M %p') }} · {{ event.location }}</p>
+    <p>{{ event.start_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+    <p><strong>{{ event.location.venue_name }}</strong><br>{{ event.location.address }}</p>
     <form method="post" action="/poll/availability" class="choice-row">
       <input type="hidden" name="event_id" value="{{ event.id }}">
       {% for value in ['yes', 'maybe', 'no'] %}
@@ -28,7 +29,7 @@
   </article>
   {% endfor %}
   <form method="post" action="/poll/email-calendar">
-    <button type="submit">Email me calendar for Yes and Maybe</button>
+    <button type="submit">Email me calendar invites for Yes and Maybe</button>
   </form>
   {% endif %}
 </section>

@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT))
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ.setdefault("ADMIN_USERNAME", "admin")
 os.environ.setdefault("ADMIN_PASSWORD", "adminpass")
-os.environ.setdefault("INVITE_CODE", "invite123")
+os.environ.setdefault("ALLOWED_EMAILS_PATH", str(ROOT / "allowed_emails.txt"))
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("SMTP_HOST", "smtp.gmail.com")
 os.environ.setdefault("SMTP_PORT", "587")
@@ -34,4 +34,3 @@ def reset_app_state():
     yield
     get_settings.cache_clear()
     database_module._session_factory = None
-
