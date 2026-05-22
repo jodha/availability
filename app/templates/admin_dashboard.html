@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} Admin</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>{{ app_name }} Admin</h1>
+    <form method="post" action="/admin/logout"><button type="submit" class="secondary">Log out</button></form>
+  </header>
+  {% if request.query_params.get('message') %}
+  <p class="flash">{{ request.query_params.get('message') }}</p>
+  {% endif %}
+  <main>
+    <section class="card">
+      <h2>Create poll</h2>
+      <form method="post" action="/admin/polls" class="stack inline-form">
+        <label>Poll title<input type="text" name="title" required></label>
+        <button type="submit">Create active poll</button>
+      </form>
+      <p class="muted">Invite code for signup: <strong>{{ invite_code }}</strong></p>
+    </section>
+    {% if poll %}
+    <section class="card">
+      <h2>Active poll: {{ poll.title }}</h2>
+      <p class="muted">{{ events|length }} of {{ max_events }} events · {{ timezone }}</p>
+      <form method="post" action="/admin/events" class="stack">
+        <label>Title<input type="text" name="title" required></label>
+        <label>Start<input type="datetime-local" name="start_at" required></label>
+        <label>Location<input type="text" name="location" required></label>
+        <button type="submit">Add event</button>
+      </form>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              {% for user in users %}
+              <th>{{ user.display_name }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in events|sort(attribute='start_at') %}
+            <tr>
+              <td>
+                <strong>{{ event.title }}</strong><br>
+                <span class="muted">{{ event.start_at.strftime('%Y-%m-%d %I:%M %p') }} · {{ event.location }}</span>
+                <form method="post" action="/admin/events/{{ event.id }}/delete">
+                  <button type="submit" class="danger small">Delete</button>
+                </form>
+              </td>
+              {% for user in users %}
+              <td>{% set pick = matrix.get(user.id, {}).get(event.id) %}{{ pick.value if pick else '' }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>

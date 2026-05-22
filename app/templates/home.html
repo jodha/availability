@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Welcome</h2>
+  {% if poll %}
+  <p>Active poll: <strong>{{ poll.title }}</strong></p>
+  {% else %}
+  <p>No active poll yet. Check back soon.</p>
+  {% endif %}
+  {% if logged_in %}
+  <a class="button" href="/poll">Go to poll</a>
+  {% else %}
+  <a class="button" href="/login">Log in</a>
+  <a class="button secondary" href="/signup">Sign up</a>
+  {% endif %}
+</section>
+{% endblock %}

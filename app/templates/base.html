@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>{{ app_name }}</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/poll">Poll</a>
+      <a href="/login">Login</a>
+      <a href="/signup">Sign up</a>
+      <a href="/admin">Admin</a>
+    </nav>
+  </header>
+  {% if request.query_params.get('message') %}
+  <p class="flash">{{ request.query_params.get('message') }}</p>
+  {% endif %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
