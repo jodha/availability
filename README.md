@@ -38,8 +38,31 @@ PYTHONPATH=. pytest
 ```bash
 sudo apt update
 sudo apt install -y docker.io docker-compose-v2 git
+sudo systemctl enable --now docker
 sudo usermod -aG docker "$USER"
 newgrp docker
+```
+
+Verify Docker works **without sudo**:
+
+```bash
+docker ps
+```
+
+If you see `permission denied` on `/var/run/docker.sock`, your user is not in the `docker` group yet. Run:
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker ps
+```
+
+If it still fails, log out of Ubuntu completely and log back in (or reboot), then run `docker ps` again.
+
+Temporary workaround (not recommended long-term):
+
+```bash
+sudo docker compose up -d --build
 ```
 
 ### 2. Clone and configure
