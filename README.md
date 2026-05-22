@@ -35,12 +35,36 @@ PYTHONPATH=. pytest
 
 ### 1. Install Docker
 
+First check whether Docker is installed:
+
+```bash
+which docker
+systemctl status docker
+dpkg -l | grep docker
+```
+
+If you see `Unit docker.service could not be found`, Docker Engine is **not installed yet**.
+
+#### Option A: Ubuntu packages (simplest)
+
 ```bash
 sudo apt update
 sudo apt install -y docker.io docker-compose-v2 git
 sudo systemctl enable --now docker
 sudo usermod -aG docker "$USER"
 newgrp docker
+docker ps
+```
+
+#### Option B: Official Docker install script (if Option A fails)
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl git
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker ps
 ```
 
 Verify Docker works **without sudo**:
